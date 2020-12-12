@@ -16,24 +16,6 @@ function searchForSeat(inputLines, istart, jstart, imove, jmove) {
   return entry;
 }
 
-function test(inputLines) {
-  const i = 4;
-  const j = 3;
-
-  const left = searchForSeat(inputLines, i, j, 0, -1);
-  const right = searchForSeat(inputLines, i, j, 0, 1);
-  const up = searchForSeat(inputLines, i, j, -1, 0);
-  const down = searchForSeat(inputLines, i, j, 1, 0);
-  const upperLeft = searchForSeat(inputLines, i, j, -1, -1);
-  const upperRight = searchForSeat(inputLines, i, j, -1, 1);
-  const lowerLeft = searchForSeat(inputLines, i, j, 1, -1);
-  const lowerRight = searchForSeat(inputLines, i, j, 1, 1);
-
-  const adjacent = [upperLeft, left, lowerLeft, down, lowerRight, right, upperRight, up];
-
-  console.log(adjacent);
-}
-
 function applyRules(inputLines) {
   const length = inputLines[0].length;
 
@@ -91,8 +73,6 @@ fs.readFile('input_11.txt', 'utf8' , (err, data) => {
   var lines = data.trim().split("\n");
   var modified = false;
 
-  // console.log(lines[4][3]);
-  // test(lines);
   do {
     var {modified, lines} = applyRules(lines);
 
