@@ -1,12 +1,58 @@
 const fs = require('fs');
-const { start } = require('repl');
 
-function* generateSchedule(busNumber) {
-  var current = 0;
-  while (true) {
-    yield busNumber;
-    current += busNumber;
+// Lifted from https://stackoverflow.com/a/51562038/14084085
+function modInverse(a, m) {
+  // validate inputs
+  [a, m] = [Number(a), Number(m)]
+  if (Number.isNaN(a) || Number.isNaN(m)) {
+    return NaN // invalid input
   }
+  a = (a % m + m) % m
+  if (!a || m < 2) {
+    return NaN // invalid input
+  }
+  // find the gcd
+  const s = []
+  let b = m
+  while(b) {
+    [a, b] = [b, a % b]
+    s.push({a, b})
+  }
+  if (a !== 1) {
+    return NaN // inverse does not exists
+  }
+  // find the inverse
+  let x = 1
+  let y = 0
+  for(let i = s.length - 2; i >= 0; --i) {
+    [x, y] = [y,  x - y * Math.floor(s[i].a / s[i].b)]
+  }
+  return (y % m + m) % m
+}
+
+function chineseRemainder(nums, rems) {
+  var prod = 1;
+  for(let i = 0; i < nums.length; i++) {
+    prod *= nums[i];
+  }
+
+  console.log(`prod: ${prod}`);
+
+  var pp = [];
+  var inv = [];
+  var number = 0;
+  for(let i = 0; i < nums.length; i++) {
+    pp.push(prod / nums[i]);
+    inv.push(modInverse(pp[i], nums[i]));
+
+    number += rems[i] * pp[i] * inv[i]; 
+  }
+
+  number %= prod;
+
+  console.log(`pp: ${pp}`);
+  console.log(`inv: ${inv}`);
+  console.log(`number: ${number}`);
 }
 
 fs.readFile('input_13.txt', 'utf8' , (err, data) => {
@@ -18,49 +64,16 @@ fs.readFile('input_13.txt', 'utf8' , (err, data) => {
   var lines = data.trim().split("\n");
 
   var buses = lines[1].split(",");
-  var departureMap = {};
-  var largest = 0;
 
-  var starting = {
-    busNumber: parseInt(buses[0]),
-    run: parseInt(buses[0]),
-  };
+  var nums = [parseInt(buses[0])];
+  var rems = [0];
+
   for(let i = 1; i < buses.length; i++) {
     if(buses[i] !== "x") {
       const busNumber = parseInt(buses[i]);
-
-      departureMap[i] = {
-        busNumber,
-        run: busNumber + i,
-      };
-      largest = i;
+      nums.push(busNumber);
+      rems.push(busNumber - i);
     } 
   }
-
-  var sequential = false;
-  var ctr = 0;
-  while(!sequential) {
-    starting.run += starting.busNumber;
-
-    ctr++;
-    console.log();
-    console.log(departureMap);
-
-    // console.log(`smallest: ${starting.run}, largest ${departureMap[largest].run}`);
-    sequential = true;
-    for (const [key, value] of Object.entries(departureMap)) {
-
-      const startingPoint = Math.floor(starting.run/value.busNumber) * value.busNumber;
-      const postStartPoint = startingPoint + value.busNumber;
-
-      // console.log(`For ${value.busNumber}, closest is ${postStartPoint}, diff is ${postStartPoint - starting.run}, should be ${key}`);
-      if(postStartPoint - starting.run != key) {
-        sequential = false;
-        break;
-      }
-    }
-  }
-  console.log();
-  console.log(`${starting.run} in ${ctr} iterations`);
-
+  chineseRemainder(nums, rems);
 })
