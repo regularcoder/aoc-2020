@@ -30,28 +30,26 @@ function modInverse(a, m) {
   return (y % m + m) % m
 }
 
+// Implementation guided by https://www.geeksforgeeks.org/chinese-remainder-theorem-set-2-implementation/
 function chineseRemainder(nums, rems) {
-  var prod = 1;
+  var prod = 1n;
   for(let i = 0; i < nums.length; i++) {
-    prod *= nums[i];
+    prod *= BigInt(nums[i]);
   }
 
   console.log(`prod: ${prod}`);
 
   var pp = [];
   var inv = [];
-  var number = 0;
+  var number = 0n;
   for(let i = 0; i < nums.length; i++) {
-    pp.push(prod / nums[i]);
-    inv.push(modInverse(pp[i], nums[i]));
+    pp.push(prod / BigInt(nums[i]));
+    inv.push(BigInt(modInverse(pp[i], nums[i])));
 
-    number += rems[i] * pp[i] * inv[i]; 
+    number += BigInt(rems[i]) * pp[i] * inv[i]; 
   }
 
   number %= prod;
-
-  console.log(`pp: ${pp}`);
-  console.log(`inv: ${inv}`);
   console.log(`number: ${number}`);
 }
 
@@ -68,9 +66,9 @@ fs.readFile('input_13.txt', 'utf8' , (err, data) => {
   var nums = [parseInt(buses[0])];
   var rems = [0];
 
-  for(let i = 1; i < buses.length; i++) {
+  for(let i = 1n; i < buses.length; i++) {
     if(buses[i] !== "x") {
-      const busNumber = parseInt(buses[i]);
+      const busNumber = BigInt(buses[i]);
       nums.push(busNumber);
       rems.push(busNumber - i);
     } 
