@@ -22,7 +22,7 @@ with open(filepath) as fp:
             masked = appplyMask(mask, number)
 
             addressDict[address] = masked
-            print("address " + address + " number " + number.__str__() + ", masked " + masked.__str__())
+            print(" number " + number.__str__() + ", address " + address + ", masked " + masked.__str__())
        line = fp.readline()
        cnt += 1
 
