@@ -1,28 +1,40 @@
-def appplyMask(mask, number):
-    mask1 = int(mask.replace("X", "0"), 2)
-    mask0 = int(mask.replace("X", "1"), 2)
-    
-    return (number | mask1) & mask0
+addressDict = {}
+
+def appplyMask(mask, numberToMask, value):
+    # mask 1 becomes 1 on number, all else unchanged
+    apply1 = int(mask.replace("X", "0"), 2)
+    initial = numberToMask | apply1
+
+    # Change all X's to 0 for initial
+    changeX0 = int(mask.replace("0", "1").replace("X", "0"), 2)
+    initial0 = initial & changeX0
+
+    counter = initial0
+    for i in range(pow(2, mask.count("X"))):
+        # everything except X's becomes 1
+        counter = (counter | changeX0) + 1
+        # keep only X's
+        keepX = int(mask.replace("1", "0").replace("X", "1"), 2)
+        counter = (counter & keepX) | initial0
+
+        addressDict[counter] = value
+        print("ini2 " + "{0:b}".format(counter).zfill(36) + " " + counter.__str__())
 
 filepath = 'input_14.txt'
-addressDict = {}
 with open(filepath) as fp:
    line = fp.readline()
    cnt = 1
    mask = ""
    while line:
        if "mask" in line:
-           print("Setting mask to " + line[7:])
            mask = line[7:]
        else:
             splitLines = line.split(" = ")
-            address = splitLines[0][4:-1]
+            address = int(splitLines[0][4:-1])
             number = int(splitLines[1])
 
-            masked = appplyMask(mask, number)
-
-            addressDict[address] = masked
-            print("address " + address + " number " + number.__str__() + ", masked " + masked.__str__())
+            appplyMask(mask, address, number)
+  
        line = fp.readline()
        cnt += 1
 
