@@ -19,12 +19,14 @@ fs.readFile('input_14.txt', 'utf8' , (err, data) => {
 
   var lines = data.trim().split("\n");
 
-  var mask;
+  let mask;
   var numericArray = {};
 
   for(let i = 0; i < lines.length; i++) {
     if(lines[i].indexOf("mask") > -1) {
-      mask = lines[0].split("mask = ")[1]
+      mask = lines[i].split("mask = ")[1];
+      console.log();
+      console.log(`setting mask to ${mask}`);
     } else {
       const setParts = lines[i].split(" = ");
       const address = parseInt(setParts[0].slice(4).slice(0, -1));
