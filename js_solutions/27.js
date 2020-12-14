@@ -5,15 +5,10 @@ String.prototype.replaceAt = function(index, replacement) {
 }
 
 function applyMask(number, mask) {
-  var binaryNumber = number.toString(2).padStart(36, "0");
+  const mask1 = BigInt(`0b${mask.replace(/X/g, "0")}`);
+  const mask0 = BigInt(`0b${mask.replace(/X/g, "1")}`);
 
-  console.log(`pre binaryNumber: ${binaryNumber}`);
-  mask.forEach((maskedDigit) => {
-    binaryNumber = binaryNumber.replaceAt(maskedDigit.index, maskedDigit.value);
-  });
-  console.log(`pos binaryNumber: ${binaryNumber}`);
-
-  return BigInt(`0b${binaryNumber}`);
+  return (number | mask1) & mask0;
 }
 
 fs.readFile('input_14.txt', 'utf8' , (err, data) => {
@@ -25,29 +20,19 @@ fs.readFile('input_14.txt', 'utf8' , (err, data) => {
   var lines = data.trim().split("\n");
 
   var mask;
-  var maskChars;
   var numericArray = {};
 
   for(let i = 0; i < lines.length; i++) {
     if(lines[i].indexOf("mask") > -1) {
       mask = lines[0].split("mask = ")[1]
-
-      maskChars = [];
-      for(var j = mask.length - 1; j >= 0; j--) {
-        if(mask[j] != "X") {
-          maskChars.push({index: j, value: mask[j]});
-        }
-      }
-      console.log(maskChars);
     } else {
       const setParts = lines[i].split(" = ");
       const address = parseInt(setParts[0].slice(4).slice(0, -1));
-
       const number = BigInt(setParts[1]);
 
-      const masked = applyMask(number, maskChars);
-  
+      const masked = applyMask(number, mask);
       numericArray[address] = masked;
+
       console.log(`number: ${number}, address = ${address}, masked: ${masked}`);
     }
   }
