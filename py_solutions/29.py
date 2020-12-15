@@ -7,12 +7,10 @@ for i in input:
     lastSeenDict[i] = [counter]
     counter = counter + 1
 
-spoken = []
 lastSpoken = input[-1]
 
 def speak(numToSpeak):
-    global spoken, lastSpoken, lastSeenDict, counter
-    spoken.append(numToSpeak)
+    global lastSpoken, lastSeenDict, counter
     lastSpoken = numToSpeak
 
     if(lastSpoken in lastSeenDict):
@@ -23,8 +21,8 @@ def speak(numToSpeak):
 
 while True:
     print("\n")
-    print("lastSpoken: ", lastSpoken, "lastSeenDict", lastSeenDict, "spoken", spoken)
-    if (lastSpoken in spoken) and len(lastSeenDict[lastSpoken]) == 2:
+    print("lastSpoken: ", lastSpoken, "lastSeenDict", lastSeenDict)
+    if (lastSpoken in lastSeenDict) and len(lastSeenDict[lastSpoken]) == 2:
         speakNow = lastSeenDict[lastSpoken][1] - lastSeenDict[lastSpoken][0]
         print("appending", speakNow, "since ", lastSpoken, "was spoken before.")
         speak(speakNow)
