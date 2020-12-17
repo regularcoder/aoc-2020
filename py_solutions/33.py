@@ -44,33 +44,32 @@ def runCycle(dict1):
     dict2 = {}
 
     runThrough = dict1.items()
-    for currentPos, posValue in runThrough:
+    print runThrough
+    while(len(runThrough) > 0):
+        currentPos, posValue = runThrough.pop()
         neighbours = findNeighbours(currentPos)
-
-        # missing neighbours
-        for neighbour in neighbours:
-            if neighbour not in dict1:
-                dict1[neighbour] = "."
 
         activeNeighbours = len(filter(bool, [dict1.get(pos, "") == "#" for pos in neighbours]))
 
         print("finding neigbours for", currentPos, activeNeighbours)
 
+        
         if posValue == "#":
-            print "active"
+            # also add missing neighbours
+            for neighbour in neighbours:
+                if neighbour not in dict1:
+                    runThrough.append((neighbour, ".",))
+                    dict1[neighbour] = "."
+                    dict2[neighbour] = "."
+
             if activeNeighbours == 2 or activeNeighbours == 3:
-                print "stays active"
                 dict2[currentPos] = "#"
             else:
-                print "becomes inactive"
                 dict2[currentPos] = "."
         else:
-            print "inactive"
             if activeNeighbours == 3:
-                print "becomes active"
                 dict2[currentPos] = "#"
             else:
-                print "stays inactive"
                 dict2[currentPos] = "."
     
     return dict2
@@ -83,10 +82,7 @@ def countActive(dict1):
     
     return activeCount
 
-updatedGameDict = runCycle(gameDict)
 
-printGameDict(gameDict, 3)
-print countActive(gameDict)
-print
-printGameDict(updatedGameDict, 3)
-print countActive(updatedGameDict)
+for i in range(6):
+    gameDict = runCycle(gameDict)
+    print countActive(gameDict)
