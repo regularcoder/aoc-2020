@@ -4,7 +4,7 @@ import re
 
 lines = [l.rstrip('\n') for l in sys.stdin]
 
-def handleExpression(line, prev, prevExtraOperator):
+def handleSimpleExpression(line, prev, prevExtraOperator):
     print("processsing", line, prev, prevExtraOperator)
 
     if line == "":
@@ -44,14 +44,60 @@ def handleExpression(line, prev, prevExtraOperator):
 
     return (result, operator,)
 
-for i, l in enumerate(lines):
-    expressions = re.split("\(|\)", l)
-    # expressions.reverse()
+def processOnlySimple(line):
+    operatorCount = line.count("*") + line.count("+")
+    numberCount = len(re.findall("\d+", line))
 
-    prev = 0
-    extraOperator = ""
+    if operatorCount == numberCount - 1:
+        elements = line.split(" ")
+        operator = ""
+        result = int(elements[0])
+        for el in elements[1:]:
+            if el == "*" or el == "+":
+                operator = el
+            else:
+                num = int(el)
+                if operator == "*":
+                    result = result * num
+                else:
+                    result = result + num
+        return result.__str__()
+    else:
+        return line
+
+def processLine(l):
+    expressions = re.split("\(|\)", l)
+    print expressions
+    expressions.reverse()
+
+    simplified = ""
     for subEx in expressions:
-        (prev, extraOperator) = handleExpression(subEx, prev, extraOperator)
-        print("returned", prev, extraOperator)
-        print
-    print prev
+        result = processOnlySimple(subEx)
+        
+        if result != "":
+            if simplified == "":
+                simplified = result
+            else:
+                operatorCount = simplified.count("*") + simplified.count("+")
+                numberCount = len(re.findall("\d+", simplified))
+
+                if operatorCount == numberCount - 1 and numberCount > 1:
+                    print("appending", result, simplified)
+                    simplified = result + "(" + simplified + ")"
+                else:
+                    simplified = result + simplified
+    
+    return (simplified, len(expressions) > 1,)
+
+for i, l in enumerate(lines):
+    print
+    processedLine = l
+
+    while True:
+        (processedLine, shouldContinue) = processLine(processedLine)
+        (processedLine, shouldContinue) = processLine(processedLine)
+        (processedLine, shouldContinue) = processLine(processedLine)
+
+        print processedLine
+        # if not shouldContinue:
+        break
