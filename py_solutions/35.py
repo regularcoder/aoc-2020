@@ -4,100 +4,68 @@ import re
 
 lines = [l.rstrip('\n') for l in sys.stdin]
 
-def handleSimpleExpression(line, prev, prevExtraOperator):
-    print("processsing", line, prev, prevExtraOperator)
-
-    if line == "":
-        return (prev, "")
-    elif line == " + ":
-        return (prev, "+")
-    elif line == " * ":
-        return (prev, "*")
-
-    if prevExtraOperator != "":
-        print("changing line to", line + " " + prevExtraOperator + " " + prev.__str__())
-        line = (line + " " + prevExtraOperator + " " + prev.__str__())
-    
+def processSimple(line):
     elements = line.split(" ")
-
-    result = prev
-    if elements[0] != "":
-        result = int(elements[0])
-    
-    operator = prevExtraOperator
-    print elements[1:]
+    operator = ""
+    result = int(elements[0])
     for el in elements[1:]:
         if el == "*" or el == "+":
             operator = el
         else:
-            if el != "":
-                num = int(el)
-            else:
-                break
-
+            num = int(el)
             if operator == "*":
                 result = result * num
-                operator = ""
             else:
                 result = result + num
-                operator = ""
+    return result.__str__()
 
-    return (result, operator,)
-
-def processOnlySimple(line):
-    operatorCount = line.count("*") + line.count("+")
-    numberCount = len(re.findall("\d+", line))
-
-    if operatorCount == numberCount - 1:
-        elements = line.split(" ")
-        operator = ""
-        result = int(elements[0])
-        for el in elements[1:]:
-            if el == "*" or el == "+":
-                operator = el
-            else:
-                num = int(el)
-                if operator == "*":
-                    result = result * num
-                else:
-                    result = result + num
-        return result.__str__()
+def processLine(l, processOnlyWrapped = True):
+    if processOnlyWrapped:
+        expressionRegex = "\((\d+(?: [\+\*] \d+)+)\)"
+        expressions = re.findall(expressionRegex, l)
     else:
-        return line
+        expressions = [l]
 
-def processLine(l):
-    expressions = re.split("\(|\)", l)
-    print expressions
-    expressions.reverse()
-
-    simplified = ""
+    line = l
     for subEx in expressions:
-        result = processOnlySimple(subEx)
-        
-        if result != "":
-            if simplified == "":
-                simplified = result
-            else:
-                operatorCount = simplified.count("*") + simplified.count("+")
-                numberCount = len(re.findall("\d+", simplified))
+        result = processSimple(subEx)
+        print("replacing", subEx, result)
 
-                if operatorCount == numberCount - 1 and numberCount > 1:
-                    print("appending", result, simplified)
-                    simplified = result + "(" + simplified + ")"
-                else:
-                    simplified = result + simplified
+        if processOnlyWrapped:
+            replaceEx = "(" + subEx + ")"
+        else:
+            replaceEx = subEx
+
+        line = line.replace(replaceEx, result)
     
-    return (simplified, len(expressions) > 1,)
+    return (line, len(expressions) > 0,)
 
+# ((31) * (4)) + 4 ===> (31 * 4) + 4
+def removeExtraBrackets(l):
+    line = l
+    replacements = re.findall("(\((\d+)\))", line)
+
+    for wrapped, unwrapped in replacements:
+        line = line.replace(wrapped, unwrapped)
+
+    return line
+
+sum = 0
 for i, l in enumerate(lines):
     print
+    print l
     processedLine = l
 
     while True:
         (processedLine, shouldContinue) = processLine(processedLine)
-        (processedLine, shouldContinue) = processLine(processedLine)
-        (processedLine, shouldContinue) = processLine(processedLine)
 
-        print processedLine
-        # if not shouldContinue:
-        break
+        print (processedLine, shouldContinue)
+
+        if not shouldContinue:
+            (processedLine, shouldContinue) = processLine(processedLine, False) 
+            break
+
+    print processedLine
+    sum += int(processedLine)
+
+print sum
