@@ -4,19 +4,34 @@ import re
 
 lines = [l.rstrip('\n') for l in sys.stdin]
 
-def processSimple(line):
+def processAddition(line):
     elements = line.split(" ")
-    operator = ""
+    return int(elements[0]) + int(elements[2])
+
+def runAddition(l):
+    line = l
+
+    while True:
+        expressions = re.findall("\d+ \+ \d+", line)
+
+        if len(expressions) == 0:
+            break
+
+        for subEx in expressions:
+            result = processAddition(subEx)
+
+            line = line.replace(subEx, result.__str__())
+    
+    return line
+
+def processSimple(line):
+    line = runAddition(line)
+
+    elements = line.split(" ")
     result = int(elements[0])
     for el in elements[1:]:
-        if el == "*" or el == "+":
-            operator = el
-        else:
-            num = int(el)
-            if operator == "*":
-                result = result * num
-            else:
-                result = result + num
+        if el != "*":
+            result = result * int(el)
     return result.__str__()
 
 def processLine(l, processOnlyWrapped = True):
@@ -29,8 +44,6 @@ def processLine(l, processOnlyWrapped = True):
     line = l
     for subEx in expressions:
         result = processSimple(subEx)
-        print("replacing", subEx, result)
-
         if processOnlyWrapped:
             replaceEx = "(" + subEx + ")"
         else:
