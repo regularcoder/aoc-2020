@@ -13,15 +13,14 @@ for rule in rules:
 
     ruleDict[ruleParts[0]] = ruleParts[1].replace("\"", "").lstrip()
 
-def generateRule(ruleDict, exactMatch = 0):
-    expression = ruleDict["0"]
+def generateRule(ruleDict, startWith = "0", exactMatch = False):
+    expression = ruleDict[startWith]
 
     ruleDict["8"] = "(?:42)+"
-    if exactMatch == 0:
-        ruleDict["11"] = "((42)+)((31)+)"
-    else:
+    if exactMatch:
         ruleDict["11"] = "(?:42)NUM(?:31)NUM"
-        # print("now it is ", ruleDict["11"])
+    else:
+        ruleDict["11"] = "((42)+)((31)+)"
 
     while True:
         subExps = re.findall("\d+", expression)
@@ -34,13 +33,14 @@ def generateRule(ruleDict, exactMatch = 0):
             if "|" in replacement:
                 replacement = "(?:" + replacement + ")"
 
-            # print "replacing %s with %s in %s" % (subExp, replacement, expression)
             expression = re.sub(r"\b%s\b" % subExp, replacement, expression)
         
-    return "^" + expression.replace(" ", "").replace("NUM", "{%s}" % exactMatch) + "$"
+    return expression.replace(" ", "")
 
-expression = generateRule(ruleDict)
-print("final expression", expression)
+expression = "^" + generateRule(ruleDict) + "$" 
+exactExpression = "^" + generateRule(ruleDict, exactMatch=True) + "$" 
+expression42 = generateRule(ruleDict, "42")
+expression31 = generateRule(ruleDict, "31")
 
 ## Now perform matching
 matchCount = 0
@@ -50,18 +50,12 @@ for testLine in testData:
     matches = re.match(expression, testLine)
 
     if matches:
-        length = matches.group(3).count(matches.group(4))
-        preciseRule = generateRule(ruleDict, length)
+        count42 = len(re.findall(expression42, matches.group(1)))
+        count31 = len(re.findall(expression31, matches.group(3)))
 
-        # print("precise", preciseRule, length)
+        preciseRule = exactExpression.replace("NUM", "{%s}" % count31)
+
         if re.match(preciseRule, testLine):
             matchCount = matchCount + 1
-            # print("valid", testLine)
-        else:
-            print("precise", preciseRule, length)
-            print("INVALID", testLine)
-            # break
-    # else:
-    #     print("INVALID", testLine)
 
 print matchCount
