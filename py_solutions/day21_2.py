@@ -64,6 +64,15 @@ for ingredients in allIngredients:
 
     safeCount = safeCount + len(nonAllergens)
     # print nonAllergens
-# print confirmedAllergensDict
+# allergens = confirmedAllergensDict.values()
 
-print safeCount
+flippedDict = {}
+for key, value in confirmedAllergensDict.items():
+    flippedDict[value] = key
+
+valueList = confirmedAllergensDict.values()
+valueList.sort()
+
+flippedList = [flippedDict[value] for value in valueList] 
+
+print ",".join(flippedList)
