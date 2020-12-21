@@ -37,13 +37,15 @@ for key, tile in tiles.items():
 
 
 # https://stackoverflow.com/questions/8421337/rotating-a-two-dimensional-array-in-
-def rotate(tileToRotate):
+def rotate(tileName):
+    tileToRotate = tiles[tileName]
     rotatedTuples = list(zip(*tileToRotate[::-1]))
     rotated = []
     for rotatedTuple in rotatedTuples:
         rotated.append("".join(rotatedTuple))
 
-    return rotated
+    tiles[tileName] = rotated
+    tileEdges[tileName] = computeEdge(tiles[tileName])
 
 # https://www.codespeedy.com/how-to-reverse-two-dimensional-array-in-python/
 def flipUpsideDown(tileName):
@@ -60,9 +62,25 @@ def findMatchForEdge(edgeToLookFor, keyToExclude):
             if edgeToLookFor in [edge.top, edge.bottom, edge.left, edge.right]:
                 return key
 
+def findExactMatchForEdge(edgeToLookFor, keyToExclude):
+    for key, edge in tileEdges.items():
+        if key != keyToExclude:
+            if edgeToLookFor == edge.top:
+                return ("top", key)
+            if edgeToLookFor == edge.bottom:
+                return ("bottom", key)
+            if edgeToLookFor == edge.left:
+                return ("left", key)
+            if edgeToLookFor == edge.right:
+                return ("right", key)
+
 def findMatchForTile(tileName, tile, topEmpty = False, bottomEmpty = False, leftEmpty = False, rightEmpty = False):
     matchingEdgesWithNone = []
-    
+    topMatch = None
+    bottomMatch = None
+    leftMatch = None
+    leftMatchRev = None
+    rightMatchRev = None
     if tile.top:
         topMatch = findMatchForEdge(tile.top, tileName)
         matchingEdgesWithNone.append(topMatch)
@@ -129,50 +147,123 @@ bigSquare = {}
 # bigSquare[bigSquareSide - 1, 0] = corners.pop()
 
 bigSquare[0, 0] = 1951
-bigSquare[0, bigSquareSide - 1] = 3079
-bigSquare[bigSquareSide - 1, bigSquareSide - 1] = 1171
-bigSquare[bigSquareSide - 1, 0] = 2971
+# bigSquare[0, bigSquareSide - 1] = 3079
+# bigSquare[bigSquareSide - 1, bigSquareSide - 1] = 1171
+# bigSquare[bigSquareSide - 1, 0] = 2971
 
 findMatchForTile(bigSquare[0, 0], tileEdges[bigSquare[0, 0]], topEmpty=True, leftEmpty=True)
 # print("0, 0")
 # printTile(tiles[bigSquare[0, 0]])
 
-findMatchForTile(bigSquare[0, bigSquareSide - 1], tileEdges[bigSquare[0, bigSquareSide - 1]], topEmpty=True, rightEmpty=True)
+# findMatchForTile(bigSquare[0, bigSquareSide - 1], tileEdges[bigSquare[0, bigSquareSide - 1]], topEmpty=True, rightEmpty=True)
 # print("0, bigSquareSide - 1")
 # printTile(tiles[bigSquare[0, bigSquareSide - 1]])
 
-findMatchForTile(bigSquare[bigSquareSide - 1, bigSquareSide - 1], tileEdges[bigSquare[bigSquareSide - 1, bigSquareSide - 1]], bottomEmpty=True, rightEmpty=True)
+# findMatchForTile(bigSquare[bigSquareSide - 1, bigSquareSide - 1], tileEdges[bigSquare[bigSquareSide - 1, bigSquareSide - 1]], bottomEmpty=True, rightEmpty=True)
 # print("bigSquareSide - 1, bigSquareSide - 1")
 # printTile(tiles[bigSquare[bigSquareSide - 1, bigSquareSide - 1]])
 
-findMatchForTile(bigSquare[bigSquareSide - 1, 0], tileEdges[bigSquare[bigSquareSide - 1, 0]], bottomEmpty=True, leftEmpty=True)
+# findMatchForTile(bigSquare[bigSquareSide - 1, 0], tileEdges[bigSquare[bigSquareSide - 1, 0]], bottomEmpty=True, leftEmpty=True)
 # print("bigSquareSide - 1, 0")
 # printTile(tiles[bigSquare[bigSquareSide - 1, 0]])
 
+def findExactMatchForTile(tileName, tile):
+    matchingEdgesWithNone = []
+    topMatch = None
+    bottomMatch = None
+    leftMatch = None
+    leftMatchRev = None
+    rightMatchRev = None
+    if tile.top:
+        topMatch = findExactMatchForEdge(tile.top, tileName)
+        if topMatch:
+            return topMatch + (False,)
+        
+        topMatchRev = findExactMatchForEdge(tile.top[::-1], tileName)  
+        if topMatchRev:
+            return topMatchRev + (True,)
+    if tile.bottom:
+        bottomMatch = findExactMatchForEdge(tile.bottom, tileName) 
+        if bottomMatch:
+            return bottomMatch + (False,) 
+
+        bottomMatchRev = findExactMatchForEdge(tile.bottom[::-1], tileName)  
+        if bottomMatchRev:
+           return bottomMatchRev + (True,)
+    if tile.left:
+        leftMatch = findExactMatchForEdge(tile.left, tileName)
+        if leftMatch:
+            return leftMatch + (False,) 
+
+        leftMatchRev = findExactMatchForEdge(tile.left[::-1], tileName)
+        if leftMatchRev:
+            return leftMatchRev + (True,)
+    if tile.right:
+        rightMatch = findExactMatchForEdge(tile.right, tileName)
+        if rightMatch:
+            return rightMatch + (False,) 
+
+        rightMatchRev = findExactMatchForEdge(tile.right[::-1], tileName)
+        if rightMatchRev:
+            return rightMatchRev + (True,)
+
 del tileEdges[bigSquare[0, 0]]
-del tileEdges[bigSquare[0, bigSquareSide - 1]]
-del tileEdges[bigSquare[bigSquareSide - 1, bigSquareSide - 1]]
-del tileEdges[bigSquare[bigSquareSide - 1, 0]]
+# del tileEdges[bigSquare[0, bigSquareSide - 1]]
+# del tileEdges[bigSquare[bigSquareSide - 1, bigSquareSide - 1]]
+# del tileEdges[bigSquare[bigSquareSide - 1, 0]]
 for i in range(bigSquareSide):
     row = ""
     for j in range(bigSquareSide):
         keyIJ = bigSquare.get((i, j), "*")
 
         if keyIJ == "*":
-            # print "searching for %d %d" % (i, j)
+            topEmpty = i == 0
+            leftEmpty = j == 0
+            rightEmpty = j == bigSquareSide - 1
+            bottomEmpty = i == bigSquareSide - 1
             leftEdge = None
             topEdge = None
+            lookForPosition = ""
+
+            adjacentPos = ""
             if j > 0:
-                # print "left edge is %d" % bigSquare[i, j - 1]
-                leftEdge = computeEdge(tiles[bigSquare[i, j - 1]]).right
-            if i > 0:
-                # print "top edge is %d" % bigSquare[i - 1, j]
-                topEdge = computeEdge(tiles[bigSquare[i - 1, j]]).bottom
+                adjacentPos = bigSquare[i, j - 1]
+                print "left edge is %d" % adjacentPos
+                lookForPosition = "left"
+                leftEdge = computeEdge(tiles[adjacentPos]).right
+            if i > 0 and lookForPosition == "":
+                adjacentPos = bigSquare[i - 1, j]
+                print "top edge is %d" % adjacentPos
+                lookForPosition = "top"
+                topEdge = computeEdge(tiles[adjacentPos]).bottom
 
             searchTile = Edge(topEdge, None, leftEdge, None)
-            result = findMatchForTile(999999, searchTile)
+            # result = findMatchForTile(999999, searchTile, topEmpty=topEmpty, bottomEmpty=bottomEmpty, leftEmpty=leftEmpty)#, rightEmpty=rightEmpty)
             
-            bigSquare[i, j] = result[0]
+            (position, matchingTile, reverse) = findExactMatchForTile("9999", searchTile)
+            print("result", position, matchingTile, reverse)
+
+            if lookForPosition == position and reverse:
+                flipUpsideDown(matchingTile)
+            elif (lookForPosition == "top" and position == "bottom") or (lookForPosition == "bottom" and position == "top"):
+                flipUpsideDown(matchingTile)
+            elif (lookForPosition == "left" and position == "bottom"):
+                rotate(matchingTile)
+                flipUpsideDown(matchingTile)
+            elif (lookForPosition == "left" and position == "right"):
+                flipLeftRight(matchingTile)
+            elif lookForPosition != position:
+                print "ALARM ALARM, action needed!", matchingTile, lookForPosition, position
+
+                print adjacentPos
+                printTile(tiles[adjacentPos])
+                print
+                print matchingTile
+                printTile(tiles[matchingTile])
+                print
+                quit()
+
+            bigSquare[i, j] = matchingTile
             del tileEdges[bigSquare[i, j]]
 
         row = row + " " + bigSquare.get((i, j), "*").__str__()
@@ -212,7 +303,33 @@ for i in range(bigSquareSide):
 
 
 # flip(1951)
+# print "1951"
 # printTile(tiles[1951])
+# print
+
+# print "2311"
+# printTile(tiles[2311])
+# print
+
+# print "3079"
+# printTile(tiles[3079])
+# print
+
+# print "2729"
+# printTile(tiles[2729])
+# print
+
+# print "1427"
+# printTile(tiles[1427])
+# print
+
+# print "2473"
+# printTile(tiles[2473])
+# print
+
+# print "2971"
+# printTile(tiles[2971])
+# print
 # print(tileEdges[1951].__dict__)
 # print
 
