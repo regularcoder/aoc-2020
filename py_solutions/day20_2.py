@@ -146,7 +146,7 @@ bigSquare = {}
 # bigSquare[bigSquareSide - 1, bigSquareSide - 1] = corners.pop()
 # bigSquare[bigSquareSide - 1, 0] = corners.pop()
 
-bigSquare[0, 0] = 1951
+bigSquare[0, 0] = corners.pop()
 # bigSquare[0, bigSquareSide - 1] = 3079
 # bigSquare[bigSquareSide - 1, bigSquareSide - 1] = 1171
 # bigSquare[bigSquareSide - 1, 0] = 2971
@@ -228,12 +228,12 @@ for i in range(bigSquareSide):
             adjacentPos = ""
             if j > 0:
                 adjacentPos = bigSquare[i, j - 1]
-                print "left edge is %d" % adjacentPos
+                # print "left edge is %d" % adjacentPos
                 lookForPosition = "left"
                 leftEdge = computeEdge(tiles[adjacentPos]).right
             if i > 0 and lookForPosition == "":
                 adjacentPos = bigSquare[i - 1, j]
-                print "top edge is %d" % adjacentPos
+                # print "top edge is %d" % adjacentPos
                 lookForPosition = "top"
                 topEdge = computeEdge(tiles[adjacentPos]).bottom
 
@@ -241,7 +241,7 @@ for i in range(bigSquareSide):
             # result = findMatchForTile(999999, searchTile, topEmpty=topEmpty, bottomEmpty=bottomEmpty, leftEmpty=leftEmpty)#, rightEmpty=rightEmpty)
             
             (position, matchingTile, reverse) = findExactMatchForTile("9999", searchTile)
-            print("result", position, matchingTile, reverse)
+            # print("result", position, matchingTile, reverse)
 
             if lookForPosition == position and reverse:
                 flipUpsideDown(matchingTile)
@@ -251,9 +251,13 @@ for i in range(bigSquareSide):
                 rotate(matchingTile)
                 flipUpsideDown(matchingTile)
             elif (lookForPosition == "left" and position == "right"):
+                flipLeftRight(matchingTile)       
+            elif (lookForPosition == "top" and position == "right"):
+                flipLeftRight(matchingTile)
+                rotate(matchingTile)
                 flipLeftRight(matchingTile)
             elif lookForPosition != position:
-                print "ALARM ALARM, action needed!", matchingTile, lookForPosition, position
+                print "ALARM ALARM, action needed!", matchingTile, reverse, lookForPosition, position
 
                 print adjacentPos
                 printTile(tiles[adjacentPos])
@@ -319,11 +323,14 @@ for i in range(bigSquareSide):
 # printTile(tiles[2729])
 # print
 
-# print "1427"
-# printTile(tiles[1427])
+# print "3079"
+# printTile(tiles[3079])
 # print
 
 # print "2473"
+# flipLeftRight(2473)
+# rotate(2473)
+# flipLeftRight(2473)
 # printTile(tiles[2473])
 # print
 
