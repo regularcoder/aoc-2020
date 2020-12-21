@@ -47,6 +47,18 @@ def rotate(tileName):
     tiles[tileName] = rotated
     tileEdges[tileName] = computeEdge(tiles[tileName])
 
+# https://stackoverflow.com/questions/8421337/rotating-a-two-dimensional-array-in-
+def rotateCCW(tileName):
+    tileToRotate = tiles[tileName]
+    rotatedTuples = list(zip(*tileToRotate)[::-1])
+    rotated = []
+    for rotatedTuple in rotatedTuples:
+        rotated.append("".join(rotatedTuple))
+
+    tiles[tileName] = rotated
+    tileEdges[tileName] = computeEdge(tiles[tileName])
+
+
 # https://www.codespeedy.com/how-to-reverse-two-dimensional-array-in-python/
 def flipUpsideDown(tileName):
     tiles[tileName] = tiles[tileName][::-1]
@@ -115,9 +127,6 @@ def findMatchForTile(tileName, tile, topEmpty = False, bottomEmpty = False, left
 
     matchingEdges = [edge for edge in matchingEdgesWithNone if edge] 
 
-    # if len(matchingEdges) == 2:
-    #     print (tileName, matchingEdgesWithNone)
-
     return matchingEdges
 
 def printTile(tileToPrint):
@@ -141,31 +150,10 @@ def findCorners():
 bigSquareSide = int(math.sqrt(len(tiles)))
 corners = findCorners()
 bigSquare = {}
-# bigSquare[0, 0] = corners.pop()
-# bigSquare[0, bigSquareSide - 1] = corners.pop()
-# bigSquare[bigSquareSide - 1, bigSquareSide - 1] = corners.pop()
-# bigSquare[bigSquareSide - 1, 0] = corners.pop()
 
 bigSquare[0, 0] = corners.pop()
-# bigSquare[0, bigSquareSide - 1] = 3079
-# bigSquare[bigSquareSide - 1, bigSquareSide - 1] = 1171
-# bigSquare[bigSquareSide - 1, 0] = 2971
 
 findMatchForTile(bigSquare[0, 0], tileEdges[bigSquare[0, 0]], topEmpty=True, leftEmpty=True)
-# print("0, 0")
-# printTile(tiles[bigSquare[0, 0]])
-
-# findMatchForTile(bigSquare[0, bigSquareSide - 1], tileEdges[bigSquare[0, bigSquareSide - 1]], topEmpty=True, rightEmpty=True)
-# print("0, bigSquareSide - 1")
-# printTile(tiles[bigSquare[0, bigSquareSide - 1]])
-
-# findMatchForTile(bigSquare[bigSquareSide - 1, bigSquareSide - 1], tileEdges[bigSquare[bigSquareSide - 1, bigSquareSide - 1]], bottomEmpty=True, rightEmpty=True)
-# print("bigSquareSide - 1, bigSquareSide - 1")
-# printTile(tiles[bigSquare[bigSquareSide - 1, bigSquareSide - 1]])
-
-# findMatchForTile(bigSquare[bigSquareSide - 1, 0], tileEdges[bigSquare[bigSquareSide - 1, 0]], bottomEmpty=True, leftEmpty=True)
-# print("bigSquareSide - 1, 0")
-# printTile(tiles[bigSquare[bigSquareSide - 1, 0]])
 
 def findExactMatchForTile(tileName, tile):
     matchingEdgesWithNone = []
@@ -208,9 +196,6 @@ def findExactMatchForTile(tileName, tile):
             return rightMatchRev + (True,)
 
 del tileEdges[bigSquare[0, 0]]
-# del tileEdges[bigSquare[0, bigSquareSide - 1]]
-# del tileEdges[bigSquare[bigSquareSide - 1, bigSquareSide - 1]]
-# del tileEdges[bigSquare[bigSquareSide - 1, 0]]
 for i in range(bigSquareSide):
     row = ""
     for j in range(bigSquareSide):
@@ -226,34 +211,45 @@ for i in range(bigSquareSide):
             lookForPosition = ""
 
             adjacentPos = ""
-            if j > 0:
-                adjacentPos = bigSquare[i, j - 1]
-                # print "left edge is %d" % adjacentPos
-                lookForPosition = "left"
-                leftEdge = computeEdge(tiles[adjacentPos]).right
             if i > 0 and lookForPosition == "":
                 adjacentPos = bigSquare[i - 1, j]
-                # print "top edge is %d" % adjacentPos
                 lookForPosition = "top"
                 topEdge = computeEdge(tiles[adjacentPos]).bottom
-
+            if j > 0 and lookForPosition == "":
+                adjacentPos = bigSquare[i, j - 1]
+                lookForPosition = "left"
+                leftEdge = computeEdge(tiles[adjacentPos]).right
             searchTile = Edge(topEdge, None, leftEdge, None)
-            # result = findMatchForTile(999999, searchTile, topEmpty=topEmpty, bottomEmpty=bottomEmpty, leftEmpty=leftEmpty)#, rightEmpty=rightEmpty)
             
-            (position, matchingTile, reverse) = findExactMatchForTile("9999", searchTile)
-            # print("result", position, matchingTile, reverse)
+            findExactResults = findExactMatchForTile("9999", searchTile)
+            if not findExactResults:
+                print "SOMETHING FISHY", lookForPosition, topEdge
+            (position, matchingTile, reverse) = findExactResults
 
             if lookForPosition == position and reverse:
                 flipUpsideDown(matchingTile)
-            elif (lookForPosition == "top" and position == "bottom") or (lookForPosition == "bottom" and position == "top"):
+            elif (lookForPosition == "top" and position == "bottom" and not reverse) or (lookForPosition == "bottom" and position == "top" and not reverse):
                 flipUpsideDown(matchingTile)
             elif (lookForPosition == "left" and position == "bottom"):
                 rotate(matchingTile)
-                flipUpsideDown(matchingTile)
-            elif (lookForPosition == "left" and position == "right"):
+                if reverse:
+                    flipUpsideDown(matchingTile)
+            elif (lookForPosition == "left" and position == "right" and not reverse):
                 flipLeftRight(matchingTile)       
-            elif (lookForPosition == "top" and position == "right"):
+            elif (lookForPosition == "top" and position == "right" and not reverse):
                 flipLeftRight(matchingTile)
+                rotate(matchingTile)
+                flipLeftRight(matchingTile)
+            elif (lookForPosition == "top" and position == "right" and reverse):
+                rotateCCW(matchingTile)
+                flipLeftRight(matchingTile)
+            elif (lookForPosition == "left" and position == "top"):
+                rotateCCW(matchingTile)
+                if not reverse:
+                    flipUpsideDown(matchingTile)
+            elif (lookForPosition == "top" and position == "left" and reverse):
+                rotate(matchingTile)
+            elif (lookForPosition == "top" and position == "left" and not reverse):
                 rotate(matchingTile)
                 flipLeftRight(matchingTile)
             elif lookForPosition != position:
@@ -273,75 +269,35 @@ for i in range(bigSquareSide):
         row = row + " " + bigSquare.get((i, j), "*").__str__()
     print row
 
-# key = 1951
-# printTile(tiles[key])
-# print(tileEdges[key].__dict__)
-# print
-# matches = findMatchForTile(key, tileEdges[key], topEmpty=True, rightEmpty=True)
-# printTile(tiles[key])
-# print(tileEdges[key].__dict__)
-
-# key = 2971
-# bigSquareSide - 1, 0
-# matches = findMatchForTile(key, tileEdges[key], leftEmpty=True, bottomEmpty=True)
-# printTile(tiles[2971])
-
-# key = 1171
-# printTile(tiles[key])
-# print(tileEdges[key].__dict__)
-# print
-# matches = findMatchForTile(key, tileEdges[key], bottomEmpty=True, rightEmpty=True)
-# printTile(tiles[key])
-# print(tileEdges[key].__dict__)
-
-# 0, 0
-# key = 1951
-# matches = findMatchForTile(key, tileEdges[key], leftEmpty=True, topEmpty=True)
-# del matches[0]
-# print matches
-
-
-# printTile(tiles[1951])
-# print(tileEdges[1951].__dict__)
-# print
-
-
-# flip(1951)
-# print "1951"
-# printTile(tiles[1951])
-# print
-
-# print "2311"
-# printTile(tiles[2311])
-# print
-
-# print "3079"
-# printTile(tiles[3079])
-# print
-
-# print "2729"
-# printTile(tiles[2729])
-# print
-
 # print "3079"
 # printTile(tiles[3079])
 # print
 
 # print "2473"
-# flipLeftRight(2473)
-# rotate(2473)
-# flipLeftRight(2473)
 # printTile(tiles[2473])
 # print
 
-# print "2971"
-# printTile(tiles[2971])
-# print
-# print(tileEdges[1951].__dict__)
+# # flipLeftRight(2473)
+# rotateCCW(2473)
+# flipLeftRight(2473)
+
+# print "2473"
+# printTile(tiles[2473])
 # print
 
-# printTile(rotate(rotate(tiles[1951])))
-# print
-# printTile(rotate(rotate(rotate(tiles[1951]))))
-# print
-# printTile(rotate(rotate(rotate(rotate(tiles[1951])))))
+
+def validateEdges(bigSquare, bigSquareSide):
+    for i in range(2):
+        row = ""
+        for j in range(bigSquareSide):
+            current = computeEdge(tiles[bigSquare[i, j]])
+            if j > 0:
+                adjacentPos = computeEdge(tiles[bigSquare[i, j - 1]])
+
+                if adjacentPos.right != current.left:
+                    print "ERROR ERROR on left"
+            if i > 0:
+                adjacentPos = computeEdge(tiles[bigSquare[i - 1, j]])
+
+                if adjacentPos.bottom != current.top:
+                    print "ERROR ERROR on top"
