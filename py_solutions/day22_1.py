@@ -1,4 +1,4 @@
-# To run: python day22_1.py < input_21.txt
+# To run: python day22_1.py < input_22.txt
 import sys
 import re
 
