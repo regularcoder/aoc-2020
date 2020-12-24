@@ -80,7 +80,7 @@ def applyRules(tiles):
     newTiles = {}
 
     # Add all neighbours
-    for tileKey, tileValue in tiles.items():
+    for tileKey, tileValue in tiles.copy().items():
         for directionKey, directionValue in directionToXY.items():
             neighbour = add(tileKey, directionValue)
 
