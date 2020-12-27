@@ -1,4 +1,6 @@
 # To run: python day20_2.py < input_20.txt
+# Works only on Python 2.7.x
+
 import sys
 import re
 import math
@@ -86,6 +88,21 @@ def findExactMatchForEdge(edgeToLookFor, keyToExclude):
             if edgeToLookFor == edge.right:
                 return ("right", key)
 
+def findMultiMatchForEdge(edgeToLookFor, keyToExclude):
+    results = []
+    for key, edge in tileEdges.items():
+        if key != keyToExclude:
+            if edgeToLookFor == edge.top:
+                result.append(("top", key,))
+            if edgeToLookFor == edge.bottom:
+                result.append(("bottom", key,))
+            if edgeToLookFor == edge.left:
+                result.append(("left", key,))
+            if edgeToLookFor == edge.right:
+                result.append(("right", key,))
+    
+    return results
+
 def findMatchForTile(tileName, tile, topEmpty = False, bottomEmpty = False, leftEmpty = False, rightEmpty = False):
     matchingEdgesWithNone = []
     topMatch = None
@@ -119,10 +136,10 @@ def findMatchForTile(tileName, tile, topEmpty = False, bottomEmpty = False, left
         matchingEdgesWithNone.append(rightMatchRev) 
     
     if (topEmpty and topMatch) or (bottomEmpty and bottomMatch):
-        print "flipping upside down"
+        print("flipping upside down")
         flipUpsideDown(tileName)
     if (rightEmpty and rightMatchRev) or (leftEmpty and leftMatchRev):
-        print "flipping left/right"
+        print("flipping left/right")
         flipLeftRight(tileName)
 
     matchingEdges = [edge for edge in matchingEdgesWithNone if edge] 
@@ -131,7 +148,7 @@ def findMatchForTile(tileName, tile, topEmpty = False, bottomEmpty = False, left
 
 def printTile(tileToPrint):
     for line in tileToPrint:
-        print line
+        print(line)
 
 def findCorners():
     corners = []
@@ -143,7 +160,7 @@ def findCorners():
             corners.append(key)
             result = result * key
 
-    print result
+    # print(result)
 
     return corners
 
@@ -223,7 +240,7 @@ for i in range(bigSquareSide):
             
             findExactResults = findExactMatchForTile("9999", searchTile)
             if not findExactResults:
-                print "SOMETHING FISHY", lookForPosition, topEdge
+                print("SOMETHING FISHY", lookForPosition, topEdge)
             (position, matchingTile, reverse) = findExactResults
 
             if lookForPosition == position and reverse:
@@ -253,21 +270,22 @@ for i in range(bigSquareSide):
                 rotate(matchingTile)
                 flipLeftRight(matchingTile)
             elif lookForPosition != position:
-                print "ALARM ALARM, action needed!", matchingTile, reverse, lookForPosition, position
+                print("ALARM ALARM, action needed!", matchingTile, reverse, lookForPosition, position)
 
-                print adjacentPos
+                print(adjacentPos)
                 printTile(tiles[adjacentPos])
-                print
-                print matchingTile
+                print()
+                print(matchingTile)
                 printTile(tiles[matchingTile])
-                print
+                print()
                 quit()
 
             bigSquare[i, j] = matchingTile
             del tileEdges[bigSquare[i, j]]
 
-        row = row + " " + bigSquare.get((i, j), "*").__str__()
-    print row
+        # print(bigSquare.get((i, j)))
+        row = row + " - " + bigSquare.get((i, j), "*").__str__()
+    print(row)
 
 # print "3079"
 # printTile(tiles[3079])
@@ -295,9 +313,9 @@ def validateEdges(bigSquare, bigSquareSide):
                 adjacentPos = computeEdge(tiles[bigSquare[i, j - 1]])
 
                 if adjacentPos.right != current.left:
-                    print "ERROR ERROR on left"
+                    print("ERROR ERROR on left")
             if i > 0:
                 adjacentPos = computeEdge(tiles[bigSquare[i - 1, j]])
 
                 if adjacentPos.bottom != current.top:
-                    print "ERROR ERROR on top"
+                    print("ERROR ERROR on top")
