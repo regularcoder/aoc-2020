@@ -260,13 +260,29 @@ def validateEdges(bigSquare, bigSquareSide):
 
 def removeBorder(tileID):
     actualTile = tiles[tileID]
-    tiles[tileID] = [tileLine[1:-1] for tileLine in actualTile[1:-1]]
+    return [tileLine[1:-1] for tileLine in actualTile[1:-1]]
 
-def removeAllBorders(bigSquare, bigSquareSide):
+def mergeTile(tile1, tile2):
+    merged = []
+    zippedTiles = zip(tile1, tile2)
+
+    return [zt[0] + zt[1] for zt in zippedTiles]
+    
+def removeBorderAndMerge(bigSquare, bigSquareSide):
+    finalMerged = []
     for i in range(bigSquareSide):
+        mergedRow = None
         for j in range(bigSquareSide):
-            removeBorder(bigSquare[i, j])
+            currentTile = removeBorder(bigSquare[i, j])
+
+            if mergedRow:
+                mergedRow = mergeTile(mergedRow, currentTile)
+            else:
+                mergedRow = currentTile
+        finalMerged += mergedRow
+
+    return finalMerged
 
 (bigSquare, bigSquareSide) = findEntireGrid()
 validateEdges(bigSquare, bigSquareSide)
-removeAllBorders(bigSquare, bigSquareSide)
+printTile(removeBorderAndMerge(bigSquare, bigSquareSide))
