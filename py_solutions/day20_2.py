@@ -135,13 +135,6 @@ def findCorners():
 
     return corners
 
-bigSquareSide = int(math.sqrt(len(tiles)))
-corners = findCorners()
-bigSquare = {}
-
-bigSquare[0, 0] = corners.pop()
-findMatchForTile(bigSquare[0, 0], tileEdges[bigSquare[0, 0]], topEmpty=True, leftEmpty=True)
-
 def findMultiMatchForEdge(edgesToLookFor, keyToExclude):
     for key, edge in tileEdges.items():
         results = []
@@ -172,76 +165,85 @@ def findMultiMatchForEdge(edgesToLookFor, keyToExclude):
         if len(results) == len(edgesToLookFor):
            return results
 
-del tileEdges[bigSquare[0, 0]]
-for i in range(bigSquareSide):
-    row = ""
-    for j in range(bigSquareSide):
-        keyIJ = bigSquare.get((i, j), "*")
+def findEntireGrid():
+    bigSquareSide = int(math.sqrt(len(tiles)))
+    corners = findCorners()
+    bigSquare = {}
 
-        if keyIJ == "*":
-            edgesToLookFor = []
-            lookForPosition = None
-            if j > 0:
-                adjacentPos = bigSquare[i, j - 1]
-                leftEdge = computeEdge(tiles[adjacentPos]).right
-                edgesToLookFor.append(leftEdge)
-                if not lookForPosition:
-                    lookForPosition = "left"
-            if i > 0:
-                adjacentPos = bigSquare[i - 1, j]
-                topEdge = computeEdge(tiles[adjacentPos]).bottom
-                edgesToLookFor.append(topEdge)
-                if not lookForPosition:
-                    lookForPosition = "top"
+    bigSquare[0, 0] = corners.pop()
+    findMatchForTile(bigSquare[0, 0], tileEdges[bigSquare[0, 0]], topEmpty=True, leftEmpty=True)
 
-            matchResult = findMultiMatchForEdge(edgesToLookFor, "9999")
+    del tileEdges[bigSquare[0, 0]]
+    for i in range(bigSquareSide):
+        row = ""
+        for j in range(bigSquareSide):
+            keyIJ = bigSquare.get((i, j), "*")
 
-            if not matchResult:
-                adjacentPos = bigSquare[i, j - 1]
-                print("no match for", edgesToLookFor, "lookForPosition = ", lookForPosition, "adjacent = ", adjacentPos)
+            if keyIJ == "*":
+                edgesToLookFor = []
+                lookForPosition = None
+                if j > 0:
+                    adjacentPos = bigSquare[i, j - 1]
+                    leftEdge = computeEdge(tiles[adjacentPos]).right
+                    edgesToLookFor.append(leftEdge)
+                    if not lookForPosition:
+                        lookForPosition = "left"
+                if i > 0:
+                    adjacentPos = bigSquare[i - 1, j]
+                    topEdge = computeEdge(tiles[adjacentPos]).bottom
+                    edgesToLookFor.append(topEdge)
+                    if not lookForPosition:
+                        lookForPosition = "top"
 
-            (position, matchingTile, reverse) = matchResult[0]
+                matchResult = findMultiMatchForEdge(edgesToLookFor, "9999")
 
-            if lookForPosition == position and reverse:
-                if position == "left":
+                if not matchResult:
+                    adjacentPos = bigSquare[i, j - 1]
+                    print("no match for", edgesToLookFor, "lookForPosition = ", lookForPosition, "adjacent = ", adjacentPos)
+
+                (position, matchingTile, reverse) = matchResult[0]
+
+                if lookForPosition == position and reverse:
+                    if position == "left":
+                        flipUpsideDown(matchingTile)
+                    else:
+                        flipLeftRight(matchingTile)
+                elif (lookForPosition == "top" and position == "bottom" and not reverse) or (lookForPosition == "bottom" and position == "top" and not reverse):
                     flipUpsideDown(matchingTile)
-                else:
+                elif (lookForPosition == "left" and position == "bottom"):
+                    rotate(matchingTile)
+                    if reverse:
+                        flipUpsideDown(matchingTile)
+                elif (lookForPosition == "left" and position == "right" and not reverse):
+                    flipLeftRight(matchingTile)       
+                elif (lookForPosition == "top" and position == "right" and not reverse):
                     flipLeftRight(matchingTile)
-            elif (lookForPosition == "top" and position == "bottom" and not reverse) or (lookForPosition == "bottom" and position == "top" and not reverse):
-                flipUpsideDown(matchingTile)
-            elif (lookForPosition == "left" and position == "bottom"):
-                rotate(matchingTile)
-                if reverse:
-                    flipUpsideDown(matchingTile)
-            elif (lookForPosition == "left" and position == "right" and not reverse):
-                flipLeftRight(matchingTile)       
-            elif (lookForPosition == "top" and position == "right" and not reverse):
-                flipLeftRight(matchingTile)
-                rotate(matchingTile)
-                flipLeftRight(matchingTile)
-            elif (lookForPosition == "top" and position == "right" and reverse):
-                rotateCCW(matchingTile)
-                flipLeftRight(matchingTile)
-            elif (lookForPosition == "left" and position == "top"):
-                rotateCCW(matchingTile)
-                if not reverse:
-                    flipUpsideDown(matchingTile)
-            elif (lookForPosition == "top" and position == "left" and reverse):
-                rotate(matchingTile)
-            elif (lookForPosition == "top" and position == "left" and not reverse):
-                rotate(matchingTile)
-                flipLeftRight(matchingTile)
-            elif lookForPosition != position:
-                print("ALARM ALARM, action needed!", matchingTile, reverse, lookForPosition, position)
+                    rotate(matchingTile)
+                    flipLeftRight(matchingTile)
+                elif (lookForPosition == "top" and position == "right" and reverse):
+                    rotateCCW(matchingTile)
+                    flipLeftRight(matchingTile)
+                elif (lookForPosition == "left" and position == "top"):
+                    rotateCCW(matchingTile)
+                    if not reverse:
+                        flipUpsideDown(matchingTile)
+                elif (lookForPosition == "top" and position == "left" and reverse):
+                    rotate(matchingTile)
+                elif (lookForPosition == "top" and position == "left" and not reverse):
+                    rotate(matchingTile)
+                    flipLeftRight(matchingTile)
+                elif lookForPosition != position:
+                    print("ALARM ALARM, action needed!", matchingTile, reverse, lookForPosition, position)
 
-            bigSquare[i, j] = matchingTile
-            del tileEdges[bigSquare[i, j]]
+                bigSquare[i, j] = matchingTile
+                del tileEdges[bigSquare[i, j]]
 
-        row = row + " - " + bigSquare.get((i, j), "*").__str__()
-    print(row)
+            row = row + " - " + bigSquare.get((i, j), "*").__str__()
+        print(row)
+    return (bigSquare, bigSquareSide)
 
 def validateEdges(bigSquare, bigSquareSide):
-    for i in range(2):
+    for i in range(bigSquareSide):
         row = ""
         for j in range(bigSquareSide):
             current = computeEdge(tiles[bigSquare[i, j]])
@@ -256,4 +258,5 @@ def validateEdges(bigSquare, bigSquareSide):
                 if adjacentPos.bottom != current.top:
                     print("ERROR ERROR on top")
 
+(bigSquare, bigSquareSide) = findEntireGrid()
 validateEdges(bigSquare, bigSquareSide)
