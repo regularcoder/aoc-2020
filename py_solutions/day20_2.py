@@ -37,16 +37,19 @@ tileEdges = {}
 for key, tile in tiles.items():
     tileEdges[key] = computeEdge(tile)
 
-
-# https://stackoverflow.com/questions/8421337/rotating-a-two-dimensional-array-in-
-def rotate(tileName):
-    tileToRotate = tiles[tileName]
+def rotate(tileToRotate):
     rotatedTuples = list(zip(*tileToRotate[::-1]))
     rotated = []
     for rotatedTuple in rotatedTuples:
         rotated.append("".join(rotatedTuple))
 
-    tiles[tileName] = rotated
+    return rotated
+
+# https://stackoverflow.com/questions/8421337/rotating-a-two-dimensional-array-in-
+def rotateTile(tileName):
+    tileToRotate = tiles[tileName]
+
+    tiles[tileName] = rotate(tileToRotate)
     tileEdges[tileName] = computeEdge(tiles[tileName])
 
 # https://stackoverflow.com/questions/8421337/rotating-a-two-dimensional-array-in-
@@ -66,8 +69,11 @@ def flipUpsideDown(tileName):
     tiles[tileName] = tiles[tileName][::-1]
     tileEdges[tileName] = computeEdge(tiles[tileName])
 
-def flipLeftRight(tileName):
-    tiles[tileName] = [tileLine[::-1] for tileLine in tiles[tileName]]
+def flipLeftRight(tile):
+    return [tileLine[::-1] for tileLine in tile]
+
+def flipTileLeftRight(tileName):
+    tiles[tileName] = flipLeftRight(tiles[tileName])
     tileEdges[tileName] = computeEdge(tiles[tileName])
 
 def findMatchForEdge(edgeToLookFor, keyToExclude):
@@ -113,7 +119,7 @@ def findMatchForTile(tileName, tile, topEmpty = False, bottomEmpty = False, left
         flipUpsideDown(tileName)
     if (rightEmpty and rightMatchRev) or (leftEmpty and leftMatchRev):
         print("flipping left/right")
-        flipLeftRight(tileName)
+        flipTileLeftRight(tileName)
 
     matchingEdges = [edge for edge in matchingEdgesWithNone if edge] 
 
@@ -207,31 +213,31 @@ def findEntireGrid():
                     if position == "left":
                         flipUpsideDown(matchingTile)
                     else:
-                        flipLeftRight(matchingTile)
+                        flipTileLeftRight(matchingTile)
                 elif (lookForPosition == "top" and position == "bottom" and not reverse) or (lookForPosition == "bottom" and position == "top" and not reverse):
                     flipUpsideDown(matchingTile)
                 elif (lookForPosition == "left" and position == "bottom"):
-                    rotate(matchingTile)
+                    rotateTile(matchingTile)
                     if reverse:
                         flipUpsideDown(matchingTile)
                 elif (lookForPosition == "left" and position == "right" and not reverse):
-                    flipLeftRight(matchingTile)       
+                    flipTileLeftRight(matchingTile)       
                 elif (lookForPosition == "top" and position == "right" and not reverse):
-                    flipLeftRight(matchingTile)
-                    rotate(matchingTile)
-                    flipLeftRight(matchingTile)
+                    flipTileLeftRight(matchingTile)
+                    rotateTile(matchingTile)
+                    flipTileLeftRight(matchingTile)
                 elif (lookForPosition == "top" and position == "right" and reverse):
                     rotateCCW(matchingTile)
-                    flipLeftRight(matchingTile)
+                    flipTileLeftRight(matchingTile)
                 elif (lookForPosition == "left" and position == "top"):
                     rotateCCW(matchingTile)
                     if not reverse:
                         flipUpsideDown(matchingTile)
                 elif (lookForPosition == "top" and position == "left" and reverse):
-                    rotate(matchingTile)
+                    rotateTile(matchingTile)
                 elif (lookForPosition == "top" and position == "left" and not reverse):
-                    rotate(matchingTile)
-                    flipLeftRight(matchingTile)
+                    rotateTile(matchingTile)
+                    flipTileLeftRight(matchingTile)
                 elif lookForPosition != position:
                     print("ALARM ALARM, action needed!", matchingTile, reverse, lookForPosition, position)
 
@@ -283,6 +289,57 @@ def removeBorderAndMerge(bigSquare, bigSquareSide):
 
     return finalMerged
 
+def checkMonsterAt(grid, x, y):
+    side = len(grid)
+
+    monsterCoords = [(1, 1), (1, 4), (0, 5), (0, 6), (1, 7), (1, 10), (0, 11), (0, 12), (1, 13), (1, 16), (0, 17), (0, 18), (0, 19), (-1, 18)]
+
+    for coord in monsterCoords:
+        toCheckX = x + coord[0]
+        toCheckY = y + coord[1]
+
+        if toCheckX >= side or toCheckY >= side:
+            return False
+        elif grid[toCheckX][toCheckY] != "#":
+            return False
+
+    return True
+
+def findSeaMonster(grid):
+    side = len(grid)
+    monsterCount = 0
+
+    for i in range(side):
+        for j in range(side):
+            current = grid[i][j]
+
+            if current == "#":
+                if checkMonsterAt(grid, i, j):
+                    print("found monster at %d and %d" % (i, j))
+                    monsterCount += 1
+    
+    return monsterCount
+
+def findHashCount(grid):
+    side = len(grid)
+
+    hashCount = 0
+    for i in range(side):
+        for j in range(side):
+            if grid[i][j] == "#":
+                hashCount += 1
+    
+    return hashCount
+
 (bigSquare, bigSquareSide) = findEntireGrid()
 validateEdges(bigSquare, bigSquareSide)
-printTile(removeBorderAndMerge(bigSquare, bigSquareSide))
+grid = removeBorderAndMerge(bigSquare, bigSquareSide)
+
+grid = rotate(grid)
+grid = rotate(grid)
+monsterCount = findSeaMonster(grid)
+
+hashCount = findHashCount(grid)
+
+answer = hashCount - (monsterCount * 15)
+print answer
