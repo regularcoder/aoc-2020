@@ -88,21 +88,6 @@ def findExactMatchForEdge(edgeToLookFor, keyToExclude):
             if edgeToLookFor == edge.right:
                 return ("right", key)
 
-def findMultiMatchForEdge(edgeToLookFor, keyToExclude):
-    results = []
-    for key, edge in tileEdges.items():
-        if key != keyToExclude:
-            if edgeToLookFor == edge.top:
-                result.append(("top", key,))
-            if edgeToLookFor == edge.bottom:
-                result.append(("bottom", key,))
-            if edgeToLookFor == edge.left:
-                result.append(("left", key,))
-            if edgeToLookFor == edge.right:
-                result.append(("right", key,))
-    
-    return results
-
 def findMatchForTile(tileName, tile, topEmpty = False, bottomEmpty = False, leftEmpty = False, rightEmpty = False):
     matchingEdgesWithNone = []
     topMatch = None
@@ -169,8 +154,37 @@ corners = findCorners()
 bigSquare = {}
 
 bigSquare[0, 0] = corners.pop()
-
 findMatchForTile(bigSquare[0, 0], tileEdges[bigSquare[0, 0]], topEmpty=True, leftEmpty=True)
+
+def findMultiMatchForEdge(edgesToLookFor, keyToExclude):
+    for key, edge in tileEdges.items():
+        results = []
+
+        if key != keyToExclude:
+            for edgeToLookFor in edgesToLookFor:
+                reverseEdgeToLookFor = edgeToLookFor[::-1]
+                if edgeToLookFor == edge.top:
+                    results.append(("top", key, False))
+                if reverseEdgeToLookFor == edge.top:
+                    results.append(("top", key, True))
+
+                if edgeToLookFor == edge.bottom:
+                    results.append(("bottom", key, False))
+                if reverseEdgeToLookFor == edge.bottom:
+                    results.append(("bottom", key, True))
+
+                if edgeToLookFor == edge.left:
+                    results.append(("left", key, False))
+                if reverseEdgeToLookFor == edge.left:
+                    results.append(("left", key, True))
+
+                if edgeToLookFor == edge.right:
+                    results.append(("right", key, False))
+                if reverseEdgeToLookFor == edge.right:
+                    results.append(("right", key, True))
+        
+        if len(results) == len(edgesToLookFor):
+            return results
 
 def findExactMatchForTile(tileName, tile):
     matchingEdgesWithNone = []
@@ -219,29 +233,23 @@ for i in range(bigSquareSide):
         keyIJ = bigSquare.get((i, j), "*")
 
         if keyIJ == "*":
-            topEmpty = i == 0
-            leftEmpty = j == 0
-            rightEmpty = j == bigSquareSide - 1
-            bottomEmpty = i == bigSquareSide - 1
-            leftEdge = None
-            topEdge = None
-            lookForPosition = ""
-
-            adjacentPos = ""
-            if i > 0 and lookForPosition == "":
+            edgesToLookFor = []
+            lookForPosition = None
+            if i > 0:
                 adjacentPos = bigSquare[i - 1, j]
-                lookForPosition = "top"
                 topEdge = computeEdge(tiles[adjacentPos]).bottom
-            if j > 0 and lookForPosition == "":
+                edgesToLookFor.append(topEdge)
+                lookForPosition = "top"
+            if j > 0:
                 adjacentPos = bigSquare[i, j - 1]
-                lookForPosition = "left"
                 leftEdge = computeEdge(tiles[adjacentPos]).right
-            searchTile = Edge(topEdge, None, leftEdge, None)
-            
-            findExactResults = findExactMatchForTile("9999", searchTile)
-            if not findExactResults:
-                print("SOMETHING FISHY", lookForPosition, topEdge)
-            (position, matchingTile, reverse) = findExactResults
+                edgesToLookFor.append(leftEdge)
+                if not lookForPosition:
+                    lookForPosition = "left"
+
+            matchResult = findMultiMatchForEdge(edgesToLookFor, "9999")
+
+            (position, matchingTile, reverse) = matchResult[0]
 
             if lookForPosition == position and reverse:
                 flipUpsideDown(matchingTile)
