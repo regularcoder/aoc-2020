@@ -258,5 +258,15 @@ def validateEdges(bigSquare, bigSquareSide):
                 if adjacentPos.bottom != current.top:
                     print("ERROR ERROR on top")
 
+def removeBorder(tileID):
+    actualTile = tiles[tileID]
+    tiles[tileID] = [tileLine[1:-1] for tileLine in actualTile[1:-1]]
+
+def removeAllBorders(bigSquare, bigSquareSide):
+    for i in range(bigSquareSide):
+        for j in range(bigSquareSide):
+            removeBorder(bigSquare[i, j])
+
 (bigSquare, bigSquareSide) = findEntireGrid()
 validateEdges(bigSquare, bigSquareSide)
+removeAllBorders(bigSquare, bigSquareSide)
