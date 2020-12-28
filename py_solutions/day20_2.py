@@ -76,18 +76,6 @@ def findMatchForEdge(edgeToLookFor, keyToExclude):
             if edgeToLookFor in [edge.top, edge.bottom, edge.left, edge.right]:
                 return key
 
-def findExactMatchForEdge(edgeToLookFor, keyToExclude):
-    for key, edge in tileEdges.items():
-        if key != keyToExclude:
-            if edgeToLookFor == edge.top:
-                return ("top", key)
-            if edgeToLookFor == edge.bottom:
-                return ("bottom", key)
-            if edgeToLookFor == edge.left:
-                return ("left", key)
-            if edgeToLookFor == edge.right:
-                return ("right", key)
-
 def findMatchForTile(tileName, tile, topEmpty = False, bottomEmpty = False, leftEmpty = False, rightEmpty = False):
     matchingEdgesWithNone = []
     topMatch = None
@@ -145,8 +133,6 @@ def findCorners():
             corners.append(key)
             result = result * key
 
-    # print(result)
-
     return corners
 
 bigSquareSide = int(math.sqrt(len(tiles)))
@@ -157,7 +143,6 @@ bigSquare[0, 0] = corners.pop()
 findMatchForTile(bigSquare[0, 0], tileEdges[bigSquare[0, 0]], topEmpty=True, leftEmpty=True)
 
 def findMultiMatchForEdge(edgesToLookFor, keyToExclude):
-    finalResults = []
     for key, edge in tileEdges.items():
         results = []
 
@@ -166,75 +151,26 @@ def findMultiMatchForEdge(edgesToLookFor, keyToExclude):
                 reverseEdgeToLookFor = edgeToLookFor[::-1]
                 if edgeToLookFor == edge.top:
                     results.append(("top", key, False))
-                # if edgeToLookFor == edge.top[::-1]:
-                #     results.append(("top", key, True))
                 if reverseEdgeToLookFor == edge.top:
                     results.append(("top", key, True))
 
                 if edgeToLookFor == edge.bottom:
                     results.append(("bottom", key, False))
-                # if edgeToLookFor == edge.bottom[::-1]:
-                #     results.append(("bottom", key, True))
                 if reverseEdgeToLookFor == edge.bottom:
                     results.append(("bottom", key, True))
 
                 if edgeToLookFor == edge.left:
                     results.append(("left", key, False))
-                # if edgeToLookFor == edge.left[::-1]:
-                #     results.append(("left", key, True))
                 if reverseEdgeToLookFor == edge.left:
                     results.append(("left", key, True))
 
                 if edgeToLookFor == edge.right:
                     results.append(("right", key, False))
-                # if edgeToLookFor == edge.right[::-1]:
-                #     results.append(("right", key, True))
                 if reverseEdgeToLookFor == edge.right:
                     results.append(("right", key, True))
         
         if len(results) == len(edgesToLookFor):
-            finalResults = finalResults + results
-    return finalResults
-
-def findExactMatchForTile(tileName, tile):
-    matchingEdgesWithNone = []
-    topMatch = None
-    bottomMatch = None
-    leftMatch = None
-    leftMatchRev = None
-    rightMatchRev = None
-    if tile.top:
-        topMatch = findExactMatchForEdge(tile.top, tileName)
-        if topMatch:
-            return topMatch + (False,)
-        
-        topMatchRev = findExactMatchForEdge(tile.top[::-1], tileName)  
-        if topMatchRev:
-            return topMatchRev + (True,)
-    if tile.bottom:
-        bottomMatch = findExactMatchForEdge(tile.bottom, tileName) 
-        if bottomMatch:
-            return bottomMatch + (False,) 
-
-        bottomMatchRev = findExactMatchForEdge(tile.bottom[::-1], tileName)  
-        if bottomMatchRev:
-           return bottomMatchRev + (True,)
-    if tile.left:
-        leftMatch = findExactMatchForEdge(tile.left, tileName)
-        if leftMatch:
-            return leftMatch + (False,) 
-
-        leftMatchRev = findExactMatchForEdge(tile.left[::-1], tileName)
-        if leftMatchRev:
-            return leftMatchRev + (True,)
-    if tile.right:
-        rightMatch = findExactMatchForEdge(tile.right, tileName)
-        if rightMatch:
-            return rightMatch + (False,) 
-
-        rightMatchRev = findExactMatchForEdge(tile.right[::-1], tileName)
-        if rightMatchRev:
-            return rightMatchRev + (True,)
+           return results
 
 del tileEdges[bigSquare[0, 0]]
 for i in range(bigSquareSide):
@@ -263,8 +199,6 @@ for i in range(bigSquareSide):
             if not matchResult:
                 adjacentPos = bigSquare[i, j - 1]
                 print("no match for", edgesToLookFor, "lookForPosition = ", lookForPosition, "adjacent = ", adjacentPos)
-            # else:
-            #     print("match found", matchResult, "lookForPosition", lookForPosition)
 
             (position, matchingTile, reverse) = matchResult[0]
 
@@ -300,37 +234,11 @@ for i in range(bigSquareSide):
             elif lookForPosition != position:
                 print("ALARM ALARM, action needed!", matchingTile, reverse, lookForPosition, position)
 
-                print(adjacentPos)
-                printTile(tiles[adjacentPos])
-                print()
-                print(matchingTile)
-                printTile(tiles[matchingTile])
-                print()
-                quit()
-
             bigSquare[i, j] = matchingTile
             del tileEdges[bigSquare[i, j]]
 
-        # print(bigSquare.get((i, j)))
         row = row + " - " + bigSquare.get((i, j), "*").__str__()
     print(row)
-
-# print "3079"
-# printTile(tiles[3079])
-# print
-
-# print "2473"
-# printTile(tiles[2473])
-# print
-
-# # flipLeftRight(2473)
-# rotateCCW(2473)
-# flipLeftRight(2473)
-
-# print "2473"
-# printTile(tiles[2473])
-# print
-
 
 def validateEdges(bigSquare, bigSquareSide):
     for i in range(2):
@@ -347,3 +255,5 @@ def validateEdges(bigSquare, bigSquareSide):
 
                 if adjacentPos.bottom != current.top:
                     print("ERROR ERROR on top")
+
+validateEdges(bigSquare, bigSquareSide)
